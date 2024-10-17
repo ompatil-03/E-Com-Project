@@ -3,7 +3,6 @@ package com.project.Controller;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,36 +23,55 @@ import com.project.Utility.NoCategoryFoundException;
 @RequestMapping("/api/categories")
 public class CategoryController {
 	
-	 @Autowired
-	 private final CategoryService categoryService;
-
+		/*
+		 * Dependency injection using constructor
+		 */
+	 	private final CategoryService categoryService;
 	    public CategoryController(CategoryService categoryService) {
 	        this.categoryService = categoryService;
 	    }
 	    
+	    /*
+	     * Mapping to get all categories
+	     */
 	    @GetMapping
 	    public ResponseEntity<List<CategoryDTO>> getAllCategories(
 	            @RequestParam(defaultValue = "0") int page,
 	            @RequestParam(defaultValue = "10") int size) {
 	        List<Category> categories = categoryService.getAllCategories(page, size);
-	        
+	        //line checks if category is empty or not 
 	        if (categories.isEmpty()) {
 	            return ResponseEntity.noContent().build();
 	        }        
-	        
+	        /*
+	         * here we convert list<Categroy> to list<CategoryDTO> to show output in desired manner and 
+	         *avoiding the circular reference while showing the result
+	         */
 	        List<CategoryDTO> categoryDTOs = categories.stream()
 	                .map(this::convertToDTO)
 	                .collect(Collectors.toList());
 	        
 	        return ResponseEntity.ok(categoryDTOs);
 	    }
+	    
 
-
+	   /*
+	    * Mapping to create new Category
+	    */
 	    @PostMapping
-	    public Category createCategory(@RequestBody Category category) {
-	        return categoryService.createCategory(category);
+	    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
+	       try {
+	    	   return ResponseEntity.ok(categoryService.createCategory(category));
+	       }catch(Exception e) {
+	    	   System.out.println(e);
+	    	   return ResponseEntity.badRequest().build();
+	       }
 	    }
 
+	    /*
+	     * This mapping is to get category by id 
+	     * and here we used DTO to get output in desired manner 
+	     */
 	    @GetMapping("/{id}")
 	    public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable int id) {
 	        try {
@@ -65,10 +83,14 @@ public class CategoryController {
 	    }
 
 	    @PutMapping("/{id}")
-	    public CategoryDTO updateCategory(@PathVariable int id, @RequestBody Category category) throws NoCategoryFoundException{
-	        Category temp=categoryService.updateCategory(id, category);
-	        System.out.println(temp);
-	    	return new CategoryDTO(temp);
+	    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable int id, @RequestBody Category category) throws NoCategoryFoundException{
+	       try {
+	    	   Category temp=categoryService.updateCategory(id, category);
+		    	return ResponseEntity.ok(new CategoryDTO(temp));
+	       }catch(Exception e) {
+	    	   System.out.println(e);
+	    	   return ResponseEntity.notFound().build();
+	       }
 	    }
 
 	    @DeleteMapping("/{id}")
@@ -81,6 +103,10 @@ public class CategoryController {
 			}
 	    }
 	    
+	    
+	    /*
+	     * Method to convert entity to DTO type 
+	     */
 	    private CategoryDTO convertToDTO(Category category) {
 	        CategoryDTO dto = new CategoryDTO();
 	        dto.setId(category.getId());

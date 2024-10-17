@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,11 +34,6 @@ public class ProductController {
         this.productService = productService;
         this.categoryService = categoryService;
     }
-    
-    @ExceptionHandler(NoProductFoundException.class)
-    public String handleNoProductFoundException(NoProductFoundException ex) {
-        return ex.getMessage();
-    }
 
     @GetMapping
     public List<ProductDTO> getAllProducts(@RequestParam(defaultValue = "0") int page,
@@ -63,7 +57,8 @@ public class ProductController {
         System.out.println(product.getCategory());
         
         if (product.getCategory() == null || product.getCategory().getId() == 0) {
-            return ResponseEntity.badRequest().body(null); // return bad request if category is missing
+        	//following line return bad request if category is missing
+            return ResponseEntity.badRequest().body(null); 
         }
 
         int categoryId = product.getCategory().getId();
@@ -72,7 +67,8 @@ public class ProductController {
         try {
             category = categoryService.getCategoryById(categoryId);
         } catch (NoCategoryFoundException e) {
-            return ResponseEntity.notFound().build(); // return not found if category doesn't exist
+        	 // following line of code return not found if category doesn't exist
+            return ResponseEntity.notFound().build();
         }
 
         product.setCategory(category);        
@@ -86,28 +82,30 @@ public class ProductController {
         }
 
         categoryService.updateCategory(categoryId, category);
-
-        return ResponseEntity.ok(new ProductDTO(savedProduct)); // return created product DTO
+     // return created product DTO
+        return ResponseEntity.ok(new ProductDTO(savedProduct)); 
     }
 
 
     @GetMapping("/{id}")
-    public ProductDTO getProductById(@PathVariable int id) throws NoProductFoundException {
-        Product product = productService.getProductById(id);
-        /*
-         * here we used DTO to get desired output
-         */
-        return new ProductDTO(product); 
+    public ResponseEntity<ProductDTO> getProductById(@PathVariable int id) throws NoProductFoundException {
+        try {
+        	Product product = productService.getProductById(id);
+            return ResponseEntity.ok(new ProductDTO(product));
+        }catch(Exception e) {
+        	System.out.println(e);
+        	return ResponseEntity.notFound().build();
+        }
     }
 
     @PutMapping("/{id}")
-    public ProductDTO updateProduct(@PathVariable int id, @RequestBody Product product) {
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable int id, @RequestBody Product product) {
         try {
         	Product temp= productService.updateProduct(id, product);
-            return new ProductDTO(temp);
+        	 return ResponseEntity.ok(new ProductDTO(temp));
         } catch (Exception e) {
             System.out.println(e);
-            return new ProductDTO(); 
+            return ResponseEntity.notFound().build(); 
         }
     }
 

@@ -8,9 +8,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-
 
 @Entity
 public class Product {
@@ -22,8 +19,7 @@ public class Product {
     private double price;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
-//    @JsonIgnore 
+    @JoinColumn(name = "category_id", nullable = false) 
     private Category category;
 
 	    //***********Constructor and getters-setters**********************

@@ -18,12 +18,11 @@ import com.project.Utility.NoProductFoundException;
 @Service
 public class ProductService {
 	
-	private final ProductRepo productRepo;	
-	private final CategoryRepo categoryRepo;
-	
 	@Autowired
     CategoryService categoryService;
-
+	
+	private final ProductRepo productRepo;	
+	private final CategoryRepo categoryRepo;
     public ProductService(ProductRepo productRepository,CategoryRepo categoryRepo) {
         this.productRepo = productRepository;
 		this.categoryRepo = categoryRepo;
@@ -51,12 +50,6 @@ public class ProductService {
     public Product getProductById(int id) throws NoProductFoundException {
         Product product = productRepo.findById(id)
             .orElseThrow(() -> new NoProductFoundException("Product not found"));
-        System.out.println("Fetched product: " + product);
-        if (product.getCategory() != null) {
-            System.out.println("Category: " + product.getCategory());
-        } else {
-            System.out.println("Category not found for product id: " + id);
-        }
         product.setCategory(product.getCategory());
         return product;
     }
@@ -88,6 +81,7 @@ public class ProductService {
         Product existingProduct = getProductById(id);
         existingProduct.setName(product.getName());
         existingProduct.setPrice(product.getPrice());
+        existingProduct.setCategory(product.getCategory());
         return productRepo.save(existingProduct);
     }
 

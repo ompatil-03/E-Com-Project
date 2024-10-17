@@ -3,6 +3,10 @@ package com.project.Model;
 public class CategoryDTO {
 	  private int id;
 	    private String name;
+	    
+	    /*
+	     * Constructors and Getters & Setters 
+	     */
 		public CategoryDTO(int id,String name) {
 			super();
 			this.id=id;
